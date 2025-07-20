@@ -24,7 +24,7 @@ def read_registration_numbers(file_path: Path) -> list[str]:
         df = pd.read_excel(file_path)
         reg_col = df.columns[0]  # assumes registration numbers are in the first column
         registration_numbers = df[reg_col].dropna().astype(str).str.strip().tolist()
-        registration_numbers = registration_numbers[:1000]
+        registration_numbers = registration_numbers[:100]
         return registration_numbers
     except Exception as e:
         logging.error(f"Failed to read registration numbers from {file_path}: {e}")
@@ -36,7 +36,7 @@ def log_success(reg_no: str, file_type: str):
 
 
 def log_failure(reg_no: str, file_type: str, error_msg: str):
-    logging.error(f"❌ Failed {file_type} for {reg_no} — {error_msg}")
+    logging.error(f"Failed {file_type} for {reg_no} — {error_msg}")
 
 
 def handle_remove_readonly(func, path, exc_info):

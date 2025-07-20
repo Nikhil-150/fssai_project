@@ -1,7 +1,7 @@
 from config.settings import INPUT_EXCEL_PATH
-from src.downloader import PDFDownloader
+from src.downloader import AsyncPDFDownloader
 from src.utils import read_registration_numbers
-
+import asyncio
 
 class FSSAIOrchestrator:
     def __init__(self):
@@ -17,8 +17,8 @@ class FSSAIOrchestrator:
         if not self.registration_numbers:
             raise ValueError("Registration numbers not loaded.")
 
-        downloader = PDFDownloader(self.registration_numbers)
-        downloader.download_all()
+        downloader = AsyncPDFDownloader(self.registration_numbers)
+        asyncio.run(downloader.download_all())
 
     def run(self):
         """Main method to coordinate the download process."""

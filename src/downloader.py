@@ -1,104 +1,87 @@
-import requests
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from config.settings import HEADERS, PDF_DIR, COOKIES, MAX_WORKERS
-from src.utils import log_success, log_failure
-from pathlib import Path
+import asyncio
+import aiohttp
+import aiofiles
 import signal
-import threading
+from pathlib import Path
+from config.settings import HEADERS, COOKIES, PDF_DIR, MAX_WORKERS
 
 
-class PDFDownloader:
-    def __init__(self, reg_no_list: list[str], max_threads=MAX_WORKERS):
+class AsyncPDFDownloader:
+    def __init__(self, reg_no_list: list[str], max_concurrent_tasks=MAX_WORKERS):
         self.reg_no_list = reg_no_list
-        self.max_threads = max_threads
-        self.session = requests.Session()
-        self.session.headers.update(HEADERS)
-        self.session.cookies.update(COOKIES)
+        self.max_concurrent_tasks = max_concurrent_tasks
         self.failed_reg_ids = []
         self.failure_reasons = []
+        self.stop_signal = False
 
-    def _download_for_single_reg(self, reg_no: str):
-        """
-        Downloads both Registration Certificate and Application Form.
-        """
-        try:
-            self._download_file(
-                reg_no,
-                file_type="registration",
-                filename=PDF_DIR / f"registration_{reg_no}.pdf"
-            )
-            self._download_file(
-                reg_no,
-                file_type="application",
-                filename=PDF_DIR / f"application_form_{reg_no}.pdf"
-            )
-        except Exception as e:
-            print(f"[FAILED] Both PDFs for Reg ID {reg_no} - {e}")
-            self.failed_reg_ids.append(reg_no)
-            self.failure_reasons.append(str(e))
+    def _handle_signals(self):
+        def handler(_sig_num, _frame):
+            print("\n[!] Received interrupt signal. Stopping gracefully...")
+            self.stop_signal = True
 
-    def _download_file(self, reg_no: str, file_type: str, filename: Path):
-        """
-        Downloads a single PDF file. No retries.
-        """
+        signal.signal(signal.SIGINT, handler)
+        signal.signal(signal.SIGTERM, handler)
+
+    @staticmethod
+    async def _download_file(session: aiohttp.ClientSession, reg_no: str, file_type: str, filename: Path):
         if file_type == "registration":
             url = f"https://foscos.fssai.gov.in/gateway/downloadpdf2/registration/{reg_no}"
         elif file_type == "application":
             url = f"https://foscos.fssai.gov.in/gateway/fbo_readonly/getlogintofortacereg/{reg_no}"
         else:
-            raise ValueError("Unknown file_type: must be 'registration' or 'application'")
+            raise ValueError("Unknown file_type")
 
-        response = self.session.get(url)
-        if response.status_code == 200 and response.content:
-            filename.parent.mkdir(parents=True, exist_ok=True)
-            with open(filename, "wb") as f:
-                f.write(response.content)
-        else:
-            raise Exception(f"Status: {response.status_code}, URL: {url}")
+        try:
+            async with session.get(url) as response:
+                if response.status == 200:
+                    content = await response.read()
+                    filename.parent.mkdir(parents=True, exist_ok=True)
+                    async with aiofiles.open(filename, "wb") as f:
+                        await f.write(content)
+                else:
+                    raise Exception(f"Status: {response.status}, URL: {url}")
+        except Exception as e:
+            raise e
 
-    def download_all(self):
-        """
-        Multithreaded download of all registration numbers.
-        """
-        stop_event = threading.Event()
+    async def _download_for_single_reg(self, reg_no: str, session: aiohttp.ClientSession, semaphore: asyncio.Semaphore):
+        async with semaphore:
+            if self.stop_signal:
+                return
+            try:
+                await self._download_file(session, reg_no, "registration", PDF_DIR / f"registration_{reg_no}.pdf")
+                await self._download_file(session, reg_no, "application", PDF_DIR / f"application_form_{reg_no}.pdf")
+            except Exception as e:
+                print(f"[FAILED] Both PDFs for Reg ID {reg_no} - {e}")
+                self.failed_reg_ids.append(reg_no)
+                self.failure_reasons.append(str(e))
 
-        def signal_handler(sig, frame):
-            print("\n[!] Interrupt received. Shutting down gracefully...")
-            stop_event.set()
+    async def download_all(self):
+        self._handle_signals()
+        connector = aiohttp.TCPConnector(limit=100)
+        cookie_jar = aiohttp.CookieJar()
+        for name, value in COOKIES.items():
+            cookie_jar.update_cookies({name: value})
 
-        signal.signal(signal.SIGINT, signal_handler)
-        signal.signal(signal.SIGTERM, signal_handler)
+        timeout = aiohttp.ClientTimeout(total=None)  # No global timeout
+        semaphore = asyncio.Semaphore(self.max_concurrent_tasks)
 
-        with ThreadPoolExecutor(max_workers=self.max_threads) as executor:
-            futures = []
-
-            for i, reg_no in enumerate(self.reg_no_list, start=1):
-                if stop_event.is_set():
-                    print("[!] Stopping before submitting more tasks.")
+        async with aiohttp.ClientSession(headers=HEADERS, cookie_jar=cookie_jar, connector=connector,
+                                         timeout=timeout) as session:
+            tasks = []
+            for i, reg_no in enumerate(self.reg_no_list, 1):
+                if self.stop_signal:
                     break
-                futures.append(executor.submit(self._download_for_single_reg, reg_no))
+                task = self._download_for_single_reg(reg_no, session, semaphore)
+                tasks.append(asyncio.create_task(task))
                 if i % 50 == 0:
                     print(f"[INFO] Submitted {i} download tasks...")
 
-            try:
-                for future in as_completed(futures):  # No timeout
-                    if stop_event.is_set():
-                        print("[!] Cancelling remaining futures.")
-                        break
-                    future.result()
-            except KeyboardInterrupt:
-                print("\n[!] Caught KeyboardInterrupt. Exiting...")
-                stop_event.set()
-                for f in futures:
-                    f.cancel()
-                executor.shutdown(wait=False, cancel_futures=True)
-                raise
+            await asyncio.gather(*tasks)
 
         if self.failed_reg_ids:
             print(f"\n[SUMMARY] Total Failed Registration IDs: {len(self.failed_reg_ids)}")
             for reg_id in self.failed_reg_ids:
                 print(f" - {reg_id}")
-
             unique_errors = set(self.failure_reasons)
             print(f"\n[SUMMARY] Unique Error Reasons ({len(unique_errors)}): ")
             for reason in unique_errors:
