@@ -44,7 +44,7 @@ class PDFDownloader:
         if file_type == "registration":
             url = f"https://foscos.fssai.gov.in/gateway/downloadpdf2/registration/{reg_no}"
         elif file_type == "application":
-            url = f"https://foscos.fssai.gov.in/gateway/fbo_readonly/getlogintofortacereg/{reg_no}"
+            url = f"https://foscos.fssai.gov.in/gateway/downloadpdf2/forma/{reg_no}"
         else:
             raise ValueError("Unknown file_type: must be 'registration' or 'application'")
 

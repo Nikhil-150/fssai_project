@@ -19,7 +19,7 @@ headers = {
     "Accept-Encoding": "gzip, deflate, br, zstd",
     "Referer": "https://foscos.fssai.gov.in/",
     "Content-Type": "application/json",
-    "Authorization": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyMDUyMTAzMTAwMDc5NSBmb3Njb3MuZnNzYWkuZ292LmluIDEwMy4yNDcuNi4xMzYgIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9GQk8iXSwidXNlcklkIjoiNjkzNjE5NTEiLCJpYXQiOjE3NTI4NTEzNTEsImV4cCI6MTc1MjkzNzc1MX0.31rf34hW5ZXLfhkxOFJfVhDPpffCeiVJ_YIHyZOPxUiPhWe0ou1S5GUqNGCK9I5ya0YGEyiE3GHmsUu5G_e6_A",
+    "Authorization": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyMDUyMTAzMTAwMDc5NSBmb3Njb3MuZnNzYWkuZ292LmluIDIwMi4xNDguNTguMTEzICIsImF1dGhvcml0aWVzIjpbIlJPTEVfRkJPIl0sInVzZXJJZCI6IjY5MzYxOTUxIiwiaWF0IjoxNzUyOTM4Mjk4LCJleHAiOjE3NTMwMjQ2OTh9.G-0cISOMGasLVu-rCMmCNNHr1JIiT9lnh8unzFQ0MHY58Nw9lojOFmHbMTEoGVrWSMBE6JQpLIWb-l6Zv4VKLg",
     "x-auth-user-id": "f33RY6DAyt+WQt8UJG54SQUxr5GrXYXkSwv4uzKRUiI=",
     "Connection": "keep-alive",
     "Sec-Fetch-Dest": "empty",

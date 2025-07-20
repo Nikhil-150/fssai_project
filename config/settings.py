@@ -23,7 +23,7 @@ HEADERS = {
     "Accept-Encoding": "gzip, deflate, br, zstd",
     "Referer": "https://foscos.fssai.gov.in/",
     "Content-Type": "application/json",
-    "Authorization": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyMDUyMTAzMTAwMDc5NSBmb3Njb3MuZnNzYWkuZ292LmluIDIwMi4xNDguNTguMTEzICIsImF1dGhvcml0aWVzIjpbIlJPTEVfRkJPIl0sInVzZXJJZCI6IjY5MzYxOTUxIiwiaWF0IjoxNzUyOTM4Mjk4LCJleHAiOjE3NTMwMjQ2OTh9.G-0cISOMGasLVu-rCMmCNNHr1JIiT9lnh8unzFQ0MHY58Nw9lojOFmHbMTEoGVrWSMBE6JQpLIWb-l6Zv4VKLg",
+    "Authorization": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyMDUyMTAzMTAwMDc5NSBmb3Njb3MuZnNzYWkuZ292LmluIDIwMi4xNDguNTguMTQ0ICIsImF1dGhvcml0aWVzIjpbIlJPTEVfRkJPIl0sInVzZXJJZCI6IjY5MzYxOTUxIiwiaWF0IjoxNzUzMDI2MDE3LCJleHAiOjE3NTMxMTI0MTd9.UpeU91ii7m6WtjPPouASKAtrxw4hwOgugtMQ3Ar6Q-i5juQVPMcLofLWDY7nGhhhhxf_Pp-OqePekjO6YHfCNA",
     "x-auth-user-id": "f33RY6DAyt+WQt8UJG54SQUxr5GrXYXkSwv4uzKRUiI=",
     "Connection": "keep-alive",
     "Sec-Fetch-Dest": "empty",
@@ -43,7 +43,7 @@ COOKIES = {
 
 # === URLs === #
 REGISTRATION_FORM_URL = "https://foscos.fssai.gov.in/gateway/downloadpdf2/registration/{reg_no}"
-APPLICATION_FORM_URL = "https://foscos.fssai.gov.in/gateway/fbo_readonly/getlogintofortacereg/{reg_no}"
+APPLICATION_FORM_URL = "https://foscos.fssai.gov.in/gateway/downloadpdf2/forma/{reg_no}"
 
 # === Threading Settings === #
 MAX_WORKERS = 25
