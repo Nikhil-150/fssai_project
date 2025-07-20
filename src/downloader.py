@@ -14,6 +14,7 @@ class PDFDownloader:
         self.session = requests.Session()
         self.session.headers.update(HEADERS)
         self.session.cookies.update(COOKIES)
+        self.failed_reg_ids = []
 
     def _download_for_single_reg(self, reg_no: str):
         """
@@ -32,10 +33,12 @@ class PDFDownloader:
             )
         except Exception as e:
             log_failure(reg_no, "both", str(e))
+            print(f"[FAILED] Both PDFs for Reg ID {reg_no} - {e}")
+            self.failed_reg_ids.append(reg_no)
 
     def _download_file(self, reg_no: str, file_type: str, filename: Path):
         """
-        Downloads a single PDF file based on type and saves to disk.
+        Downloads a single PDF file. No retries.
         """
         if file_type == "registration":
             url = f"https://foscos.fssai.gov.in/gateway/downloadpdf2/registration/{reg_no}"
@@ -44,23 +47,21 @@ class PDFDownloader:
         else:
             raise ValueError("Unknown file_type: must be 'registration' or 'application'")
 
-        headers = {
-            **self.session.headers
-        }
-
-        response = self.session.get(url)
-        if response.status_code == 200 and response.content:
-            filename.parent.mkdir(parents=True, exist_ok=True)
-            with open(filename, "wb") as f:
-                f.write(response.content)
-            log_success(reg_no, file_type)
-        else:
-            raise Exception(f"Status: {response.status_code}, URL: {url}")
+        try:
+            response = self.session.get(url)
+            if response.status_code == 200 and response.content:
+                filename.parent.mkdir(parents=True, exist_ok=True)
+                with open(filename, "wb") as f:
+                    f.write(response.content)
+                log_success(reg_no, file_type)
+            else:
+                raise Exception(f"Status: {response.status_code}, URL: {url}")
+        except requests.exceptions.RequestException as e:
+            raise e
 
     def download_all(self):
         """
-        Starts multithreaded downloads using stored registration numbers.
-        Handles graceful shutdown on KeyboardInterrupt (Ctrl+C).
+        Multithreaded download of all registration numbers.
         """
         stop_event = threading.Event()
 
@@ -68,21 +69,22 @@ class PDFDownloader:
             print("\n[!] Interrupt received. Shutting down gracefully...")
             stop_event.set()
 
-        # Register signal handler for graceful shutdown
         signal.signal(signal.SIGINT, signal_handler)
         signal.signal(signal.SIGTERM, signal_handler)
 
         with ThreadPoolExecutor(max_workers=self.max_threads) as executor:
             futures = []
 
-            for reg_no in self.reg_no_list:
+            for i, reg_no in enumerate(self.reg_no_list, start=1):
                 if stop_event.is_set():
                     print("[!] Stopping before submitting more tasks.")
                     break
                 futures.append(executor.submit(self._download_for_single_reg, reg_no))
+                if i % 50 == 0:
+                    print(f"[INFO] Submitted {i} download tasks...")
 
             try:
-                for future in as_completed(futures):
+                for future in as_completed(futures):  # No timeout
                     if stop_event.is_set():
                         print("[!] Cancelling remaining futures.")
                         break
@@ -90,8 +92,12 @@ class PDFDownloader:
             except KeyboardInterrupt:
                 print("\n[!] Caught KeyboardInterrupt. Exiting...")
                 stop_event.set()
-                # Cancel running futures (optional if downloads are short-lived)
                 for f in futures:
                     f.cancel()
                 executor.shutdown(wait=False, cancel_futures=True)
                 raise
+
+        if self.failed_reg_ids:
+            print(f"\n[SUMMARY] Total Failed Registration IDs: {len(self.failed_reg_ids)}")
+            for reg_id in self.failed_reg_ids:
+                print(f" - {reg_id}")
