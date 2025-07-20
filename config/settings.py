@@ -46,7 +46,7 @@ REGISTRATION_FORM_URL = "https://foscos.fssai.gov.in/gateway/downloadpdf2/regist
 APPLICATION_FORM_URL = "https://foscos.fssai.gov.in/gateway/fbo_readonly/getlogintofortacereg/{reg_no}"
 
 # === Threading Settings === #
-MAX_WORKERS = 30
+MAX_WORKERS = 25
 
 # === Ensure folders exist === #
 PDF_DIR.mkdir(parents=True, exist_ok=True)

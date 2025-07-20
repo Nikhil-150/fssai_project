@@ -15,6 +15,7 @@ class PDFDownloader:
         self.session.headers.update(HEADERS)
         self.session.cookies.update(COOKIES)
         self.failed_reg_ids = []
+        self.failure_reasons = []
 
     def _download_for_single_reg(self, reg_no: str):
         """
@@ -32,9 +33,9 @@ class PDFDownloader:
                 filename=PDF_DIR / f"application_form_{reg_no}.pdf"
             )
         except Exception as e:
-            log_failure(reg_no, "both", str(e))
             print(f"[FAILED] Both PDFs for Reg ID {reg_no} - {e}")
             self.failed_reg_ids.append(reg_no)
+            self.failure_reasons.append(str(e))
 
     def _download_file(self, reg_no: str, file_type: str, filename: Path):
         """
@@ -47,17 +48,13 @@ class PDFDownloader:
         else:
             raise ValueError("Unknown file_type: must be 'registration' or 'application'")
 
-        try:
-            response = self.session.get(url)
-            if response.status_code == 200 and response.content:
-                filename.parent.mkdir(parents=True, exist_ok=True)
-                with open(filename, "wb") as f:
-                    f.write(response.content)
-                log_success(reg_no, file_type)
-            else:
-                raise Exception(f"Status: {response.status_code}, URL: {url}")
-        except requests.exceptions.RequestException as e:
-            raise e
+        response = self.session.get(url)
+        if response.status_code == 200 and response.content:
+            filename.parent.mkdir(parents=True, exist_ok=True)
+            with open(filename, "wb") as f:
+                f.write(response.content)
+        else:
+            raise Exception(f"Status: {response.status_code}, URL: {url}")
 
     def download_all(self):
         """
@@ -101,3 +98,8 @@ class PDFDownloader:
             print(f"\n[SUMMARY] Total Failed Registration IDs: {len(self.failed_reg_ids)}")
             for reg_id in self.failed_reg_ids:
                 print(f" - {reg_id}")
+
+            unique_errors = set(self.failure_reasons)
+            print(f"\n[SUMMARY] Unique Error Reasons ({len(unique_errors)}): ")
+            for reason in unique_errors:
+                print(f"- {reason}")
