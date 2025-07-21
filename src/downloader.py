@@ -5,6 +5,7 @@ from src.utils import log_success, log_failure
 from pathlib import Path
 import signal
 import threading
+from queue import Queue
 
 
 class PDFDownloader:
@@ -16,22 +17,23 @@ class PDFDownloader:
         self.session.cookies.update(COOKIES)
         self.failed_reg_ids = []
         self.failure_reasons = []
+        self.output_queue = None
 
     def _download_for_single_reg(self, reg_no: str):
         """
         Downloads both Registration Certificate and Application Form.
         """
         try:
-            self._download_file(
-                reg_no,
-                file_type="registration",
-                filename=PDF_DIR / f"registration_{reg_no}.pdf"
-            )
-            self._download_file(
-                reg_no,
-                file_type="application",
-                filename=PDF_DIR / f"application_form_{reg_no}.pdf"
-            )
+            reg_path = PDF_DIR / f"registration_{reg_no}.pdf"
+            app_path = PDF_DIR / f"application_form_{reg_no}.pdf"
+
+            self._download_file(reg_no, file_type="registration", filename=reg_path)
+            self._download_file(reg_no, file_type="application", filename=app_path)
+
+            # Push to queue if both succeed
+            if self.output_queue:
+                self.output_queue.put((reg_no, app_path, reg_path))
+
         except Exception as e:
             print(f"[FAILED] Both PDFs for Reg ID {reg_no} - {e}")
             self.failed_reg_ids.append(reg_no)
