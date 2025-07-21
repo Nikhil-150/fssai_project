@@ -13,3 +13,35 @@
 2025-07-21 12:32:44,753 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
 2025-07-21 12:32:46,213 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
 2025-07-21 12:33:04,057 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-21 18:51:50,887 — ERROR — 116574565 - Extraction failed: [Errno 2] No such file or directory: 'C:\\Users\\NIKHIL MATKAWALA\\PycharmProjects\\fssai_project\\data\\pdfs\\application_form_116574565.pdf'
+2025-07-21 18:51:50,887 — ERROR — 116574570 - Extraction failed: [Errno 2] No such file or directory: 'C:\\Users\\NIKHIL MATKAWALA\\PycharmProjects\\fssai_project\\data\\pdfs\\application_form_116574570.pdf'
+2025-07-21 18:51:50,888 — ERROR — 116574571 - Extraction failed: [Errno 2] No such file or directory: 'C:\\Users\\NIKHIL MATKAWALA\\PycharmProjects\\fssai_project\\data\\pdfs\\application_form_116574571.pdf'
+2025-07-21 18:51:50,888 — ERROR — 116574566 - Extraction failed: [Errno 2] No such file or directory: 'C:\\Users\\NIKHIL MATKAWALA\\PycharmProjects\\fssai_project\\data\\pdfs\\application_form_116574566.pdf'
+2025-07-21 18:51:50,889 — ERROR — 116574562 - Extraction failed: [Errno 2] No such file or directory: 'C:\\Users\\NIKHIL MATKAWALA\\PycharmProjects\\fssai_project\\data\\pdfs\\application_form_116574562.pdf'
+2025-07-21 18:51:50,889 — ERROR — 116574563 - Extraction failed: [Errno 2] No such file or directory: 'C:\\Users\\NIKHIL MATKAWALA\\PycharmProjects\\fssai_project\\data\\pdfs\\application_form_116574563.pdf'
+2025-07-21 18:51:50,890 — ERROR — 116574561 - Extraction failed: [Errno 2] No such file or directory: 'C:\\Users\\NIKHIL MATKAWALA\\PycharmProjects\\fssai_project\\data\\pdfs\\application_form_116574561.pdf'
+2025-07-21 18:51:50,890 — ERROR — 116574564 - Extraction failed: [Errno 2] No such file or directory: 'C:\\Users\\NIKHIL MATKAWALA\\PycharmProjects\\fssai_project\\data\\pdfs\\application_form_116574564.pdf'
+2025-07-21 18:51:50,891 — ERROR — 116574574 - Extraction failed: [Errno 2] No such file or directory: 'C:\\Users\\NIKHIL MATKAWALA\\PycharmProjects\\fssai_project\\data\\pdfs\\application_form_116574574.pdf'
+2025-07-21 19:15:23,620 — ERROR — 116574561 - Extraction failed: PDFExtractor._extract_multiline_block() missing 1 required positional argument: 'stop_patterns'
+2025-07-21 19:16:06,808 — ERROR — 116574561 - Extraction failed: PDFExtractor._extract_multiline_block() missing 1 required positional argument: 'stop_patterns'
+2025-07-21 19:31:35,628 — ERROR — 116574561 - Extraction failed: no such group
+2025-07-21 20:02:19,024 — ERROR — 116574561 - Extraction failed: missing ), unterminated subpattern at position 12
+2025-07-21 20:08:19,042 — ERROR — 116574561 - Extraction failed: first argument must be string or compiled pattern
+2025-07-21 20:14:41,751 — ERROR — 116574561 - Extraction failed: first argument must be string or compiled pattern
+2025-07-21 20:33:30,883 — ERROR — 116574561 - Extraction failed: unterminated character set at position 25
+2025-07-21 20:33:53,016 — ERROR — 116574561 - Extraction failed: unterminated character set at position 25
+2025-07-21 21:04:18,708 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-21 21:04:18,884 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-21 21:04:19,366 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-21 21:04:19,459 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-21 21:04:19,665 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-21 21:04:20,016 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-21 21:04:20,381 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-21 21:04:21,469 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-21 21:04:21,609 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-21 21:04:21,610 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-21 21:04:21,611 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-21 21:04:22,004 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-21 21:04:22,676 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-21 21:04:23,090 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-21 21:04:23,495 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10

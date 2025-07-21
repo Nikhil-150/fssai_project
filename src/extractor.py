@@ -22,61 +22,41 @@ class PDFExtractor:
             app_text = self._extract_text(self.application_path)
             reg_text = self._extract_text(self.registration_path)
 
-            # Extract reusable fields
             app_no = self._find(app_text, r"Application No:\s*(\d+)")
             app_date = self._find(app_text, r"Application Date:\s*(\d{2}-\d{2}-\d{4})")
-            reg_no = self._find(reg_text, r"Registration Number:?\s*:? (\d+)")
-            issued_on = self._find(reg_text, r"Issued On\s*/\s*िदनांक:?\s*(\d{2}-\d{2}-\d{4})")
+            reg_no = self._find(reg_text, r"Registration Number:?:?\s*(\d+)")
+            issued_on = self._find(reg_text, r"Issued On\s*/\s*िदनांक:?:?\s*(\d{2}-\d{2}-\d{4})")
 
-            full_applicant_line = self._find(app_text, r"Name of Applicant.*?:\s*([^\n]+)")
-            firm_name, applicant_name = self._split_firm_and_name(full_applicant_line)
+            document_id_application = f"{app_no[-9:]}_{app_date}-application-certificate" if app_no and app_date else ""
+            document_id_registration = f"{reg_no[-9:]}_{issued_on}-registration-certificate" if reg_no and issued_on else ""
+            combined_document_id = f"{reg_no[-9:]}_{issued_on}" if reg_no and issued_on else ""
 
-            contact_person_raw = self._find(app_text, r"Contact Person:\s*(.+)")
-            contact_person = self._extract_after_slash(contact_person_raw)
-
-            sub_division = self._find(app_text, r"Sub-Division.*?:\s*([^\n]+)")
-
-            document_id_application = (
-                f"{app_no[-9:]}_{app_date}-application-certificate"
-                if app_no and app_date else ""
-            )
-
-            document_id_registration = (
-                f"{reg_no[-9:]}_{issued_on}-registration-certificate"
-                if reg_no and issued_on else ""
-            )
-
-            combined_document_id = (
-                f"{reg_no[-9:]}_{issued_on}"
-                if reg_no and issued_on else ""
+            firm_name, applicant_name = self._split_firm_and_name(
+                self._find(app_text, r"Name of Applicant\s*/\s*([\w\W]+?)\s*Application Date")
             )
 
             data = {
                 "Application No.": app_no,
-                "Application Type": self._find(app_text, r"Application Type:\s*(.+)"),
+                "Application Type": self._find(app_text, r"Application Type:?:?\s*(.+)"),
                 "Application Date": app_date,
-                "Expiry Date": self._find(reg_text, r"Valid Upto\s*:?/?\s*:? (\d{2}-\d{2}-\d{4})"),
+                "Expiry Date": self._find(reg_text, r"Valid Upto\s*:?/?\s*:?\s*(\d{2}-\d{2}-\d{4})"),
                 "District/Region/Zone": self._find(app_text, r"District/Region/Zone:\s*([^\n]+)"),
                 "Village": self._find(app_text, r"Village:\s*([^\n]+)"),
-                "PIN Code": self._find(app_text, r"Pin Code:\s*(\d+)"),
+                "PIN Code": self._find(app_text, r"Pin Code:\s*([^\n]+)"),
                 "State": self._find(app_text, r"State:\s*([^\n]+)"),
-                "Sub-Division": sub_division,
-                "Mobile No": self._find(app_text, r"Mobile No:\s*(\d+)"),
-                "Contact Person": contact_person,
-                "Name of the food category": self._find(reg_text, r"Name of the food category.*?\n(.+)", re.DOTALL),
-                "Name of Applicant": applicant_name,
-                "Certificate No": "",  # not available
-                "Document ID_application": document_id_application,
-                "Name": applicant_name,
+                "Sub-Division": self._find(app_text, r"Sub-Division/Station/.*?:?\s*([^\n]+)"),
+                "Contact Person": self._find(app_text, r"Contact Person:\s*([^\n]+)"),
+                "Mobile No.": self._find(app_text, r"Mobile No:\s*([^\n]+)"),
+                "Name of the food category": self._find(reg_text, r"Name of the food category.*?\n(.+)"),
                 "District": self._find(app_text, r"District/Region/Zone:\s*([^\n]+)"),
                 "Name of Company": firm_name,
                 "Address": self._find(app_text, r"Address:\s*(.+?)\nDistrict", re.DOTALL),
                 "Kind of Business": self._find(reg_text, r"Kind of Business.*?:\s*(\w+)"),
                 "Validity From": issued_on,
-                "Validity Upto": self._find(reg_text, r"Valid Upto\s*(\d{2}-\d{2}-\d{4})"),
+                "Validity Upto": self._find(reg_text, r"(?:Valid Upto|वैधता):?\s*(\d{2}-\d{2}-\d{4})"),
                 "Issued On": issued_on,
                 "Fee Paid": self._add_inr(self._find(app_text, r"Amount\s*\n.*?(\d+\.\d+)", re.DOTALL)),
-                "Type": self._find(app_text, r"Application Type:\s*(.+)"),
+                "Type": self._find(app_text, r"Application Type:?:?\s*(.+)"),
                 "Registration NO.": reg_no,
                 "Document ID Registration": document_id_registration,
                 "Combined Document ID": combined_document_id
@@ -93,7 +73,10 @@ class PDFExtractor:
 
     def _find(self, text: str, pattern: str, flags=0) -> str:
         match = re.search(pattern, text, flags)
-        return match.group(1).strip() if match else ""
+        if match:
+            return match.group(1).strip()
+
+        return ""
 
     def _split_firm_and_name(self, text: str) -> tuple[str, str]:
         if "/" in text:
