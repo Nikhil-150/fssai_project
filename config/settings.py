@@ -1,5 +1,15 @@
 from pathlib import Path
 
+
+# === Bearer Token from Text File === #
+TOKEN_FILE = Path(__file__).parent / "bearer_token.txt"
+
+try:
+    BEARER_TOKEN = TOKEN_FILE.read_text().strip()
+except FileNotFoundError:
+    BEARER_TOKEN = ""
+    print("Warning: Bearer token file not found.")
+
 # === Base Directories === #
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -23,7 +33,7 @@ HEADERS = {
     "Accept-Encoding": "gzip, deflate, br, zstd",
     "Referer": "https://foscos.fssai.gov.in/",
     "Content-Type": "application/json",
-    "Authorization": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyMDUyMTAzMTAwMDc5NSBmb3Njb3MuZnNzYWkuZ292LmluIDIwMi4xNDguNTguMTQ0ICIsImF1dGhvcml0aWVzIjpbIlJPTEVfRkJPIl0sInVzZXJJZCI6IjY5MzYxOTUxIiwiaWF0IjoxNzUzMDI2MDE3LCJleHAiOjE3NTMxMTI0MTd9.UpeU91ii7m6WtjPPouASKAtrxw4hwOgugtMQ3Ar6Q-i5juQVPMcLofLWDY7nGhhhhxf_Pp-OqePekjO6YHfCNA",
+    "Authorization": BEARER_TOKEN,
     "x-auth-user-id": "f33RY6DAyt+WQt8UJG54SQUxr5GrXYXkSwv4uzKRUiI=",
     "Connection": "keep-alive",
     "Sec-Fetch-Dest": "empty",
