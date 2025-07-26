@@ -3,15 +3,8 @@ import re
 import logging
 from pathlib import Path
 
-# Set up logging
-logging.basicConfig(
-    filename='logs/extraction.log',
-    level=logging.ERROR,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
 
-
-class PDFExtractor:
+class PDFExtractorSegment1:
     def __init__(self, reg_id: str, application_path: Path, registration_path: Path):
         self.reg_id = reg_id
         self.application_path = application_path

@@ -3,7 +3,7 @@ from config.settings import LOG_DIR
 from pathlib import Path
 import logging
 import shutil
-from config.settings import PDF_DIR
+from config.settings import PDF_DIR, REGISTRATION_FORMS_DIR, APPLICATION_FORMS_DIR
 import os
 from openpyxl import load_workbook
 from openpyxl.styles import Font, PatternFill, Alignment

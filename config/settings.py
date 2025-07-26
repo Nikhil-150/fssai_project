@@ -14,16 +14,22 @@ except FileNotFoundError:
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 PDF_DIR = DATA_DIR / "pdfs"
+REGISTRATION_FORMS_DIR = PDF_DIR / "registration forms"
+APPLICATION_FORMS_DIR = PDF_DIR / "application forms"
+LICENCE_FORMS_DIR = PDF_DIR / "licence forms"
 LOG_DIR = BASE_DIR / "logs"
 
 # === Input/Output Files === #
-INPUT_EXCEL_PATH = DATA_DIR / "registration_numbers.xlsx"
-OUTPUT_EXCEL_PATH = DATA_DIR / "extracted_data.xlsx"
+INPUT_EXCEL_PATH_SEGMENT_1 = DATA_DIR / "registration_numbers.xlsx"
+INPUT_EXCEL_PATH_SEGMENT_2 = DATA_DIR / "state.xlsx"
+OUTPUT_EXCEL_PATH_SEGMENT_1 = DATA_DIR / "Output Excels" / "Registration_Segment_1_Output.xlsx"
+OUTPUT_EXCEL_PATH_SEGMENT_2 = DATA_DIR / "Output Excels" / "Licence_Segment_2_Output.xlsx"
 LOG_FILE_PATH = LOG_DIR / "download.log"
 
 # === PDF Naming Patterns === #
 REGISTRATION_PDF_NAME = "registration_{reg_no}.pdf"
 APPLICATION_PDF_NAME = "application_form_{reg_no}.pdf"
+LICENCE_PDF_NAME = "Licence_form_{reg_no}.pdf"
 
 # === Auth Settings (to be filled from browser each time) === #
 HEADERS = {

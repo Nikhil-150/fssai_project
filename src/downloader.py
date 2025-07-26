@@ -1,7 +1,6 @@
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from config.settings import HEADERS, PDF_DIR, COOKIES, MAX_WORKERS
-from src.utils import log_success, log_failure
+from config.settings import HEADERS, PDF_DIR, COOKIES, MAX_WORKERS, REGISTRATION_FORMS_DIR, APPLICATION_FORMS_DIR, LICENCE_FORMS_DIR
 from pathlib import Path
 import signal
 import threading
@@ -9,8 +8,9 @@ from queue import Queue
 
 
 class PDFDownloader:
-    def __init__(self, reg_no_list: list[str], max_threads=MAX_WORKERS):
-        self.reg_no_list = reg_no_list
+    def __init__(self, input_ids: list[str], user_choice_segment: str, max_threads=MAX_WORKERS):
+        self.input_ids = input_ids
+        self.user_choice_segment = user_choice_segment
         self.max_threads = max_threads
         self.session = requests.Session()
         self.session.headers.update(HEADERS)
@@ -19,34 +19,46 @@ class PDFDownloader:
         self.failure_reasons = []
         self.output_queue = None
 
-    def _download_for_single_reg(self, reg_no: str):
+    def _download_for_single_reg(self, input_id: str):
         """
         Downloads both Registration Certificate and Application Form.
         """
         try:
-            reg_path = PDF_DIR / f"registration_{reg_no}.pdf"
-            app_path = PDF_DIR / f"application_form_{reg_no}.pdf"
+            reg_path = REGISTRATION_FORMS_DIR / f"registration_{input_id}.pdf"
+            app_path = APPLICATION_FORMS_DIR / f"application_form_{input_id}.pdf"
+            licence_path = LICENCE_FORMS_DIR / f"Licence_form_{input_id}.pdf"
 
-            self._download_file(reg_no, file_type="registration", filename=reg_path)
-            self._download_file(reg_no, file_type="application", filename=app_path)
+            if self.user_choice_segment == '1':
+                self._download_file(input_id, file_type="registration", filename=reg_path)
+                self._download_file(input_id, file_type="application", filename=app_path)
+            elif self.user_choice_segment == '2':
+                self._download_file(input_id, file_type="licence", filename=licence_path)
+            else:
+                print(f"Invalid Choice !")
 
             # Push to queue if both succeed
+            # Push to queue with appropriate files based on segment
             if self.output_queue:
-                self.output_queue.put((reg_no, app_path, reg_path))
+                if self.user_choice_segment == '1':
+                    self.output_queue.put((input_id, app_path, reg_path))
+                elif self.user_choice_segment == '2':
+                    self.output_queue.put((input_id, licence_path))
 
         except Exception as e:
-            print(f"[FAILED] Both PDFs for Reg ID {reg_no} - {e}")
-            self.failed_reg_ids.append(reg_no)
+            print(f"[FAILED] Both PDFs for Reg ID {input_id} - {e}")
+            self.failed_reg_ids.append(input_id)
             self.failure_reasons.append(str(e))
 
-    def _download_file(self, reg_no: str, file_type: str, filename: Path):
+    def _download_file(self, input_id: str, file_type: str, filename: Path):
         """
         Downloads a single PDF file. No retries.
         """
         if file_type == "registration":
-            url = f"https://foscos.fssai.gov.in/gateway/downloadpdf2/registration/{reg_no}"
+            url = f"https://foscos.fssai.gov.in/gateway/downloadpdf2/registration/{input_id}"
         elif file_type == "application":
-            url = f"https://foscos.fssai.gov.in/gateway/downloadpdf2/forma/{reg_no}"
+            url = f"https://foscos.fssai.gov.in/gateway/downloadpdf2/forma/{input_id}"
+        elif file_type == "licence":
+            url = f"https://foscos.fssai.gov.in/gateway/downloadpdf2/license/{input_id}/2"
         else:
             raise ValueError("Unknown file_type: must be 'registration' or 'application'")
 
@@ -74,7 +86,7 @@ class PDFDownloader:
         with ThreadPoolExecutor(max_workers=self.max_threads) as executor:
             futures = []
 
-            for i, reg_no in enumerate(self.reg_no_list, start=1):
+            for i, reg_no in enumerate(self.input_ids, start=1):
                 if stop_event.is_set():
                     print("[!] Stopping before submitting more tasks.")
                     break
