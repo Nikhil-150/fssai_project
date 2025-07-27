@@ -1,14 +1,25 @@
 from pathlib import Path
+from config.bearer_token_expiry_checker import get_token_expiry
+from datetime import datetime
+import sys
 
 
 # === Bearer Token from Text File === #
 TOKEN_FILE = Path(__file__).parent / "bearer_token.txt"
 
-try:
-    BEARER_TOKEN = TOKEN_FILE.read_text().strip()
-except FileNotFoundError:
-    BEARER_TOKEN = ""
-    print("Warning: Bearer token file not found.")
+
+def load_token_or_exit(token_file_path):
+    try:
+        token = token_file_path.read_text().strip()
+        expiry = get_token_expiry(token)
+        if expiry < datetime.now():
+            print("❌ Bearer token has expired. Please update bearer_token.txt and run the code again.")
+            sys.exit(1)
+        return token
+    except FileNotFoundError:
+        print("❌ Warning: bearer_token.txt not found.")
+        sys.exit(1)
+
 
 # === Base Directories === #
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,7 +50,7 @@ HEADERS = {
     "Accept-Encoding": "gzip, deflate, br, zstd",
     "Referer": "https://foscos.fssai.gov.in/",
     "Content-Type": "application/json",
-    "Authorization": BEARER_TOKEN,
+    "Authorization": load_token_or_exit(TOKEN_FILE),
     "x-auth-user-id": "f33RY6DAyt+WQt8UJG54SQUxr5GrXYXkSwv4uzKRUiI=",
     "Connection": "keep-alive",
     "Sec-Fetch-Dest": "empty",

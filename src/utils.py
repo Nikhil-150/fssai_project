@@ -28,7 +28,7 @@ def read_registration_numbers(file_path: Path) -> list[str]:
         df = pd.read_excel(file_path)
         reg_col = df.columns[0]  # assumes registration numbers are in the first column
         registration_numbers = df[reg_col].dropna().astype(str).str.strip().tolist()
-        registration_numbers = registration_numbers[:4]
+        registration_numbers = registration_numbers[:40]
         return registration_numbers
     except Exception as e:
         logging.error(f"Failed to read registration numbers from {file_path}: {e}")

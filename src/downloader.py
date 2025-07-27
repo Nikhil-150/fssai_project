@@ -5,10 +5,10 @@ from pathlib import Path
 import signal
 import threading
 from queue import Queue
-
+from datetime import datetime
 
 class PDFDownloader:
-    def __init__(self, input_ids: list[str], user_choice_segment: str, max_threads=MAX_WORKERS):
+    def __init__(self, input_ids: list[str], user_choice_segment: str, output_queue=None, max_threads=MAX_WORKERS):
         self.input_ids = input_ids
         self.user_choice_segment = user_choice_segment
         self.max_threads = max_threads
@@ -17,7 +17,7 @@ class PDFDownloader:
         self.session.cookies.update(COOKIES)
         self.failed_reg_ids = []
         self.failure_reasons = []
-        self.output_queue = None
+        self.output_queue = output_queue
 
     def _download_for_single_reg(self, input_id: str):
         """
@@ -66,6 +66,8 @@ class PDFDownloader:
         response = self.session.get(url)
         if response.status_code == 200 and response.content:
             filename.parent.mkdir(parents=True, exist_ok=True)
+            print(
+                f"[DOWNLOAD] ✅ {file_type.capitalize()} PDF downloaded for ID: {input_id} at {datetime.now().strftime('%H:%M:%S')}")
             with open(filename, "wb") as f:
                 f.write(response.content)
         else:
