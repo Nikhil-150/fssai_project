@@ -33,6 +33,7 @@ class PDFDownloader:
                 self._download_file(input_id, file_type="application", filename=app_path)
             elif self.user_choice_segment == '2':
                 self._download_file(input_id, file_type="licence", filename=licence_path)
+                print(f"[DEBUG] Downloaded licence for {input_id}")
             else:
                 print(f"Invalid Choice !")
 

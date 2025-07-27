@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 from datetime import datetime
 
+
 class PDFExtractorSegment2:
     def __init__(self, input_id: str, licence_path: Path):
         self.input_id = input_id
@@ -11,105 +12,59 @@ class PDFExtractorSegment2:
 
     def extract(self) -> dict | None:
         try:
+            print(f"[TRACE] Starting extraction for: {self.input_id}")
             licence_text = self._extract_text(self.licence_path)
+            third_last_page_text = self._get_third_last_page_text(self.licence_path)
 
-            third_page_licence_text = self._get_third_last_page_text(self.licence_path)
-            split_text = third_page_licence_text.split(
+            # Split third-last page to isolate two sections
+            split_sections = third_last_page_text.split(
                 "Person responsible for complying with conditions of license", 1
             )
+            operations_section = split_sections[0]
+            compliance_section = split_sections[1] if len(split_sections) > 1 else ""
 
-            section1 = split_text[0]  # "Person in charge of operations" section
-            section2 = split_text[1] if len(split_text) > 1 else ""  # Responsible person section
+            pin_code = self._find(operations_section, r"Pin Code:\s*([^\n]*?)\s+Photo Id Card:")
+            # escaped_pin_code = re.escape(pin_code.strip())
 
-            pin_code = self._find(section1, r"Pin Code:\s*([^\n]*?)\s+ Photo Id Card:")
-            escaped_pin = re.escape(pin_code.strip())
-
-            pattern = (
-                    r"(?:Name & Registered Office address of\s*"
-                    r"(?:Licensee[^\n]*\n)?"  # optional second line
-                    r"(?:और पता:)?\s*)"
-                    r"([\w\W]+?)\b" + escaped_pin
-            )
-
-            match = re.search(pattern, licence_text, re.IGNORECASE)
-            address_block = match.group(1).strip() if match else ""
-
-            match = re.search(
-                r"Kind of Business(?:\s*/[^\n]*)?\s*:?\s*([\w\W]+?)\n\s*Dairy Business Details",
-                licence_text,
-                re.IGNORECASE
-            )
-            if match:
-                kind_of_business = match.group(1).strip()
-            else:
-                kind_of_business = ""
-
-            match = re.search(
-                r"Category of License(?:\s*/[^\n]*)?:\s*([^\n]+)",
-                licence_text
-            )
-            if match:
-                category_of_license = match.group(1).strip()
-            else:
-                category_of_license = ""
-
-            read_table = self._extract_license_table_fields(self.licence_path)
+            # Table values (DOI, Validity From, Upto, etc.)
+            license_table_data = self._extract_license_table_fields(self.licence_path)
 
             doi = self._find(licence_text, r"Issued On(?:\s*/\s*िदनांक)?:\s*(\d{2}-\d{2}-\d{4})")
-            validity_upto = self._find(licence_text, r"Valid Upto(?:\s*/\s*वैधता)?:\s*(\d{2}-\d{2}-\d{4})")
+            validity_upto = self._find(licence_text, r"Valid Upto(?:\s*:?\s*/\s*वैधता)?\s*:?\s*(\d{2}-\d{2}-\d{4})")
 
-            # Extract Address of Authorized Premises
-            authorized_address = ""
-            address_pattern_english = r"Address of Authorized Premises:([\w\W]+?)" + re.escape(pin_code)
-            address_pattern_bilingual = r"Address of Authorized Premises\s*/\s*प्रािधकत\s*\nपिरसरो का पता:([\w\W]+?)" + re.escape(
-                pin_code)
-
-            match1 = re.search(address_pattern_bilingual, licence_text, re.IGNORECASE)
-            match2 = re.search(address_pattern_english, licence_text, re.IGNORECASE)
-
-            if match1:
-                authorized_address = match1.group(1).strip()
-            elif match2:
-                authorized_address = match2.group(1).strip()
-
-            # Fetch Sub Division
-            # Step 1: Match from State–PIN backwards
-            sub_division = ""
-            match = re.search(
-                r"(?P<subdivision>.+?),\s*(?P<district>[A-Za-z ]+),\s*(?P<state>[A-Za-z ]+)-(?P<pincode>\d{6})$",
-                authorized_address)
-
-            if match:
-                sub_division = match.group("subdivision").strip()
-            else:
-                print("Pattern not matched.")
+            authorized_address = self._extract_authorized_address(licence_text)
 
             data = {
                 "NAME": self._find(licence_text, r"Name & Registered Office address of\s*:?\s*([^\n]+)"),
-                "Address of Authorized Premises": address_block,
-                "DISTRICT": self._find(section1, r"District:\s*([^\n]+)"),
-                "STATE": self._find(section1, r"State:\s*([^\n]*?)\s+District:"),
-                "KIND OF BUSINESS": kind_of_business,
-                "Person in charge of operations Name:": self._find(section1, r"Name:\s*([^\n]*?)\s+Qualification:"),
-                "Person in charge of operations Mobile:": self._find(section1, r"Mobile No::\s*([^\n]+)"),
-                "Y": (datetime.strptime(validity_upto, "%d-%m-%Y") - datetime.strptime(doi, "%d-%m-%Y")).days // 365,
+                "Address of Authorized Premises": authorized_address,
+                "DISTRICT": self._find(operations_section, r"District:\s*([^\n]+)"),
+                "STATE": self._find(operations_section, r"State:\s*([^\n]*?)\s+District:"),
+                "KIND OF BUSINESS": self._kind_of_business(licence_text),
+                "Person in charge of operations Name:": self._find(operations_section, r"Name:\s*([^\n]*?)\s+Qualification:"),
+                "Person in charge of operations Mobile:": self._find(operations_section, r"Mobile No:\s*([^\n]+)"),
+                "Y": (
+                    (datetime.strptime(validity_upto, "%d-%m-%Y") - datetime.strptime(doi, "%d-%m-%Y")).days // 364
+                    if validity_upto and doi
+                    else ""
+                ),
                 "REF ID": self.input_id,
-                "AMOUNT": read_table["AMOUNT"],
+                "AMOUNT": license_table_data["AMOUNT"],
                 "LICENSE NUMBER": self._find(licence_text, r"License Number:\s*(\d+)"),
-                "Person responsible for complying MOBILE": self._find(section2, r"Mobile No::\s*([^\n]+)"),
+                "Person responsible for complying MOBILE": self._find(compliance_section, r"Mobile No:\s*([^\n]+)"),
                 "EXPIRY": validity_upto,
                 "DOI": doi,
-                "TYPE": read_table["TYPE"],
-                "CATEGORY OF LICENSE": category_of_license,
-                "SUB DIVISION": sub_division,
+                "TYPE": license_table_data["TYPE"],
+                "CATEGORY OF LICENSE": self._category_of_licence(licence_text),
+                "SUB DIVISION": self._extract_sub_division_from_address(authorized_address),
                 "PIN CODE": pin_code,
-                "Person in charge of operations E-mail": self._find(section1, r"Email-ID:\s*([^\n]*?)\s+Address:"),
-                "VALIDITY FROM": read_table["VALIDITY FROM"],
-                "ISSUED ON": read_table["ISSUED ON"],
+                "Person in charge of operations E-mail": self._find(operations_section, r"Email-ID:\s*([^\n\r]+?)(?=\s*Address)"),
+                "VALIDITY FROM": license_table_data["VALIDITY FROM"],
+                "ISSUED ON": license_table_data["ISSUED ON"],
             }
-
+            print(f"[TRACE] Successfully built data for: {self.input_id}")
             return data
         except Exception as e:
+            print(f"[ERROR] Exception in extract(): {self.input_id} - {e}")
             logging.error(f"{self.input_id} - Extraction failed: {e}")
             return None
 
@@ -167,4 +122,84 @@ class PDFExtractorSegment2:
                             continue  # Gracefully skip if column mismatch
 
         return result
+
+    def _kind_of_business(self, licence_text):
+        # Kind of Business
+        kind_match = re.search(
+            r"Kind of Business\s*(?:/[^:\n]*)?\s*:?\s*([\w\W]*?)\n\s*4\.\s*Dairy Business Details",
+            licence_text,
+            re.IGNORECASE
+        )
+
+        if kind_match:
+            raw_value = kind_match.group(1).strip()
+            # Replace all line breaks and extra spacing with a single space
+            kind_of_business = re.sub(r'\s*\n\s*', ' ', raw_value)
+        else:
+            kind_of_business = ""
+
+        return kind_of_business
+
+    def _extract_authorized_address(self, licence_text: str) -> str:
+        """
+        Extract the full address under '2. Address of Authorized Premises'
+        from the licence text. Supports English-only and bilingual headings.
+        Stops extraction at '3. Kind of Business'.
+        """
+        # Step 1: Extract block
+        pattern = r"Address of Authorized Premises[\w\W]+?(?=\n\s*3\.\s*Kind of Business)"
+        match = re.search(pattern, licence_text, re.IGNORECASE)
+
+        if not match:
+            return ""
+
+        block = match.group(0).strip()
+
+        # Step 2: Remove all known unwanted heading fragments
+        cleanup_patterns = [
+            r"Address of Authorized Premises\s*/?.*?:?",  # English heading
+            r"प्राधिकृत परिसर का पता[:：]?",  # Hindi version
+            r"पिरसरो का पता[:：]?",  # Common Hindi line
+            r"प्रािधकृत",  # Standalone unwanted Hindi word
+        ]
+
+        for pat in cleanup_patterns:
+            block = re.sub(pat, '', block, flags=re.IGNORECASE)
+
+        # Step 3: Normalize whitespace and return
+        block = re.sub(r'\s*\n\s*', ', ', block)  # Convert newlines to commas
+        block = re.sub(r',\s*,', ', ', block)  # Fix double commas
+        return block.strip()
+
+    def _category_of_licence(self, licence_text):
+        # Category of License
+        category_match = re.search(
+            r"Category of License(?:\s*/[^\n]*)?:\s*([^\n]+)", licence_text
+        )
+        category_of_license = category_match.group(1).strip() if category_match else ""
+
+        return category_of_license
+
+    def _extract_sub_division_from_address(self, address: str) -> str:
+        """
+        Extracts Sub-Division from the authorized address string.
+        It walks backward from the Pin Code -> State -> District -> Sub-Division.
+        """
+        # Normalize commas, remove duplicate commas
+        address = re.sub(r',+', ',', address.strip())
+
+        # Split by comma and clean individual parts
+        parts = [part.strip() for part in address.split(',') if part.strip()]
+
+        # Look from the end to find a 6-digit pin code
+        for i in range(len(parts) - 1, 2, -1):
+            if re.search(r'\b\d{6}\b', parts[i]):  # Pin Code
+                try:
+                    sub_division = parts[i - 2]  # 3 elements before pin code
+                    return sub_division.strip()
+                except IndexError:
+                    return ""
+
+        return ""
+
 

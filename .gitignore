@@ -18,4 +18,3 @@ Thumbs.db
 # Output files
 *.pdf
 *.xlsx
-config/bearer_token.txt

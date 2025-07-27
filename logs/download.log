@@ -4,3 +4,39 @@
 2025-07-26 19:59:04,407 — ERROR — 106479979 - Extraction failed: time data '' does not match format '%d-%m-%Y'
 2025-07-26 19:59:04,619 — ERROR — 106479986 - Extraction failed: time data '' does not match format '%d-%m-%Y'
 2025-07-26 19:59:05,111 — ERROR — 106479980 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-26 21:15:38,149 — ERROR — 106479979 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-26 21:15:38,848 — ERROR — 106479986 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-26 21:15:39,406 — ERROR — 106479980 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-26 21:28:17,994 — ERROR — 106479979 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-26 21:28:18,133 — ERROR — 106479986 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-26 21:28:18,549 — ERROR — 106479980 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-26 22:18:24,046 — ERROR — 106479979 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-26 22:18:24,405 — ERROR — 106479986 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-26 22:18:24,834 — ERROR — 106479980 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 12:12:25,113 — ERROR — 106479979 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 12:12:25,415 — ERROR — 106479986 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 12:12:25,868 — ERROR — 106479980 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 12:17:44,303 — ERROR — 106479979 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 12:17:44,420 — ERROR — 106479986 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 12:17:45,084 — ERROR — 106479980 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 12:20:19,971 — ERROR — 106479986 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 12:20:20,006 — ERROR — 106479979 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 12:20:20,546 — ERROR — 106479980 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 12:22:00,672 — ERROR — 106479979 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 12:22:00,720 — ERROR — 106479986 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 12:22:01,040 — ERROR — 106479980 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 12:28:39,697 — ERROR — 106479979 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 12:28:40,772 — ERROR — 106479986 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 12:28:41,017 — ERROR — 106479980 - Extraction failed: time data '' does not match format '%d-%m-%Y'
+2025-07-27 15:39:48,907 — ERROR — 106479983 - Extraction failed: cannot access local variable 're' where it is not associated with a value
+2025-07-27 15:39:48,976 — ERROR — 106479986 - Extraction failed: cannot access local variable 're' where it is not associated with a value
+2025-07-27 15:39:48,982 — ERROR — 106479979 - Extraction failed: cannot access local variable 're' where it is not associated with a value
+2025-07-27 15:39:49,180 — ERROR — 106479980 - Extraction failed: cannot access local variable 're' where it is not associated with a value
+2025-07-27 17:44:16,320 — ERROR — 106479979 - Extraction failed: name 'escaped_pin_code' is not defined
+2025-07-27 17:44:16,358 — ERROR — 106479986 - Extraction failed: name 'escaped_pin_code' is not defined
+2025-07-27 17:44:16,359 — ERROR — 106479983 - Extraction failed: name 'escaped_pin_code' is not defined
+2025-07-27 17:44:16,737 — ERROR — 106479980 - Extraction failed: name 'escaped_pin_code' is not defined
+2025-07-27 18:40:18,093 — ERROR — 106479979 - Extraction failed: 'PDFExtractorSegment2' object has no attribute '_extract_authorized_address'
+2025-07-27 18:40:18,188 — ERROR — 106479986 - Extraction failed: 'PDFExtractorSegment2' object has no attribute '_extract_authorized_address'
+2025-07-27 18:40:18,205 — ERROR — 106479983 - Extraction failed: 'PDFExtractorSegment2' object has no attribute '_extract_authorized_address'
+2025-07-27 18:40:18,731 — ERROR — 106479980 - Extraction failed: 'PDFExtractorSegment2' object has no attribute '_extract_authorized_address'

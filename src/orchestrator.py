@@ -5,7 +5,7 @@ from src.extractor_segment1 import PDFExtractorSegment1
 from src.extractor_segment2 import PDFExtractorSegment2
 from src.utils import format_excel
 from queue import Queue
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExecutor
 import multiprocessing
 import pandas as pd
 from pathlib import Path
@@ -19,8 +19,15 @@ def extract_worker_segment_1(task):
 
 def extract_worker_segment_2(task):
     input_id, licence_path = task
-    extractor = PDFExtractorSegment2(input_id, licence_path)
-    return extractor.extract()
+    try:
+        extractor = PDFExtractorSegment2(input_id, licence_path)
+        result = extractor.extract()
+        if result:
+            print(f"[DEBUG] Extracted for {input_id}")
+        return result
+    except Exception as e:
+        print(f"[ERROR] Failed extraction for {input_id}: {e}")
+        return None
 
 
 class FSSAIOrchestrator:
@@ -78,6 +85,7 @@ class FSSAIOrchestrator:
         while not self.download_queue.empty():
             input_id, licence_path = self.download_queue.get()
             tasks.append((input_id, licence_path))
+        print(f"[DEBUG] Total tasks loaded for extraction: {len(tasks)}")
 
         with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
             futures = [executor.submit(extract_worker_segment_2, task) for task in tasks]
