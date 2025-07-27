@@ -22,8 +22,6 @@ def extract_worker_segment_2(task):
     try:
         extractor = PDFExtractorSegment2(input_id, licence_path)
         result = extractor.extract()
-        if result:
-            print(f"[DEBUG] Extracted for {input_id}")
         return result
     except Exception as e:
         print(f"[ERROR] Failed extraction for {input_id}: {e}")

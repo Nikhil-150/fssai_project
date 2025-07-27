@@ -12,7 +12,7 @@ class PDFExtractorSegment2:
 
     def extract(self) -> dict | None:
         try:
-            print(f"[TRACE] Starting extraction for: {self.input_id}")
+            # print(f"[TRACE] Starting extraction for: {self.input_id}")
             licence_text = self._extract_text(self.licence_path)
             third_last_page_text = self._get_third_last_page_text(self.licence_path)
 
@@ -61,7 +61,7 @@ class PDFExtractorSegment2:
                 "VALIDITY FROM": license_table_data["VALIDITY FROM"],
                 "ISSUED ON": license_table_data["ISSUED ON"],
             }
-            print(f"[TRACE] Successfully built data for: {self.input_id}")
+            # print(f"[TRACE] Successfully built data for: {self.input_id}")
             return data
         except Exception as e:
             print(f"[ERROR] Exception in extract(): {self.input_id} - {e}")

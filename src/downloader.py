@@ -33,7 +33,7 @@ class PDFDownloader:
                 self._download_file(input_id, file_type="application", filename=app_path)
             elif self.user_choice_segment == '2':
                 self._download_file(input_id, file_type="licence", filename=licence_path)
-                print(f"[DEBUG] Downloaded licence for {input_id}")
+                # print(f"[DEBUG] Downloaded licence for {input_id}")
             else:
                 print(f"Invalid Choice !")
 
@@ -46,7 +46,7 @@ class PDFDownloader:
                     self.output_queue.put((input_id, licence_path))
 
         except Exception as e:
-            print(f"[FAILED] Both PDFs for Reg ID {input_id} - {e}")
+            # print(f"[FAILED] Both PDFs for Reg ID {input_id} - {e}")
             self.failed_reg_ids.append(input_id)
             self.failure_reasons.append(str(e))
 
@@ -110,11 +110,11 @@ class PDFDownloader:
                 raise
 
         if self.failed_reg_ids:
-            print(f"\n[SUMMARY] Total Failed Registration IDs: {len(self.failed_reg_ids)}")
+            # print(f"\n[SUMMARY] Total Failed Registration IDs: {len(self.failed_reg_ids)}")
             for reg_id in self.failed_reg_ids:
                 print(f" - {reg_id}")
 
             unique_errors = set(self.failure_reasons)
-            print(f"\n[SUMMARY] Unique Error Reasons ({len(unique_errors)}): ")
+            # print(f"\n[SUMMARY] Unique Error Reasons ({len(unique_errors)}): ")
             for reason in unique_errors:
                 print(f"- {reason}")

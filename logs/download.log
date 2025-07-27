@@ -40,3 +40,33 @@
 2025-07-27 18:40:18,188 — ERROR — 106479986 - Extraction failed: 'PDFExtractorSegment2' object has no attribute '_extract_authorized_address'
 2025-07-27 18:40:18,205 — ERROR — 106479983 - Extraction failed: 'PDFExtractorSegment2' object has no attribute '_extract_authorized_address'
 2025-07-27 18:40:18,731 — ERROR — 106479980 - Extraction failed: 'PDFExtractorSegment2' object has no attribute '_extract_authorized_address'
+2025-07-27 19:41:01,589 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:41:01,950 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:41:02,112 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:41:02,406 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:41:02,962 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:41:03,056 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:41:03,355 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:41:03,521 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:41:03,971 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:41:04,215 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:41:05,238 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:41:05,767 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:41:08,363 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:41:09,696 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:41:10,477 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:45:48,456 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:45:48,560 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:45:48,676 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:45:49,163 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:45:49,711 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:45:51,168 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:45:52,051 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:45:52,802 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:45:53,208 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:45:54,074 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:45:54,734 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:45:55,219 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:45:56,031 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:45:56,719 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
+2025-07-27 19:45:57,955 — WARNING — Connection pool is full, discarding connection: foscos.fssai.gov.in. Connection pool size: 10
