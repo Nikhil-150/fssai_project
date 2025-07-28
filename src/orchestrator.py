@@ -11,6 +11,8 @@ import pandas as pd
 from pathlib import Path
 from multiprocessing import Manager, Process
 from datetime import datetime
+import threading
+import time
 
 
 def extract_worker_segment_1(task):
@@ -76,6 +78,7 @@ class FSSAIOrchestrator:
 
         self.manager = Manager()
         self.extracted_rows = self.manager.list()
+        self.autosave_stop_event = threading.Event()
 
     def load_registration_numbers(self, user_choice_for_segment):
         """Reads the registration / licence ref id numbers from the Excel file."""
@@ -176,7 +179,14 @@ class FSSAIOrchestrator:
     def run(self):
         self.load_registration_numbers(self.segment)
 
-        # Start extractor workers first
+        # ✅ Create a lock for thread-safe autosave
+        lock = threading.Lock()
+
+        # ✅ Start autosave thread before processing
+        autosave_thread = threading.Thread(target=self.autosave_worker, args=(lock,), daemon=True)
+        autosave_thread.start()
+
+        # ✅ Start extractor workers first
         workers = []
         for _ in range(multiprocessing.cpu_count()):
             if self.segment == '1':
@@ -186,17 +196,51 @@ class FSSAIOrchestrator:
             p.start()
             workers.append(p)
 
-        # Start downloading (this will push items into the queue)
+        # ✅ Start downloading (this will push items into the queue)
         self.download_pdfs()
 
-        # Signal workers to stop after queue is exhausted
+        # ✅ Signal workers to stop after queue is exhausted
         for _ in workers:
             self.download_queue.put(None)
 
-        # Wait for all workers to finish
+        # ✅ Wait for all workers to finish
         for p in workers:
             p.join()
 
+        # ✅ Stop autosave thread after everything is done
+        self.autosave_stop_event.set()
+        autosave_thread.join()
+
+        # ✅ Final save to Excel
         self.save_to_excel()
+
+    def autosave_worker(self, lock):
+        while not self.autosave_stop_event.is_set():
+            time.sleep(600)  # 10 minutes
+
+            with lock:
+                if self.extracted_rows:
+                    print(f"[AUTOSAVE] Saving partial results at {datetime.now().strftime('%H:%M:%S')}...")
+
+                    df = pd.DataFrame(list(self.extracted_rows))
+
+                    # Final output path
+                    output_path = Path(OUTPUT_EXCEL_PATH_SEGMENT_1) if self.segment == "1" else Path(
+                        OUTPUT_EXCEL_PATH_SEGMENT_2)
+
+                    # ✅ Safe and short temp file name
+                    if self.segment == "1":
+                        temp_path = output_path.parent / "Reg_Seg_1_Output_Temp.xlsx"
+                    else:
+                        temp_path = output_path.parent / "Lice_Seg_2_Output_Temp.xlsx"
+
+                    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+                    try:
+                        df.to_excel(temp_path, index=False, sheet_name="Autosave")
+                        temp_path.replace(output_path)
+                        print(f"[AUTOSAVE] ✅ Excel autosaved to {output_path}")
+                    except Exception as e:
+                        print(f"[AUTOSAVE ERROR] ❌ Failed to autosave: {e}")
 
 
