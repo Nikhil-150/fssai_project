@@ -52,7 +52,7 @@ class PDFDownloader:
 
     def _download_file(self, input_id: str, file_type: str, filename: Path):
         """
-        Downloads a single PDF file. No retries.
+        Downloads a single PDF file. No retries. Use timeout and better error handling.
         """
         if file_type == "registration":
             url = f"https://foscos.fssai.gov.in/gateway/downloadpdf2/registration/{input_id}"
@@ -61,17 +61,24 @@ class PDFDownloader:
         elif file_type == "licence":
             url = f"https://foscos.fssai.gov.in/gateway/downloadpdf2/license/{input_id}/2"
         else:
-            raise ValueError("Unknown file_type: must be 'registration' or 'application'")
+            raise ValueError("Unknown file_type: must be 'registration' or 'application' or 'licence' ")
 
-        response = self.session.get(url)
-        if response.status_code == 200 and response.content:
-            filename.parent.mkdir(parents=True, exist_ok=True)
-            print(
-                f"[DOWNLOAD] ✅ {file_type.capitalize()} PDF downloaded for ID: {input_id} at {datetime.now().strftime('%H:%M:%S')}")
-            with open(filename, "wb") as f:
-                f.write(response.content)
-        else:
-            raise Exception(f"Status: {response.status_code}, URL: {url}")
+        try:
+            response = self.session.get(url, timeout=25)  # Timeout of 15 seconds
+            if response.status_code == 200 and response.content:
+                filename.parent.mkdir(parents=True, exist_ok=True)
+                with open(filename, "wb") as f:
+                    f.write(response.content)
+
+                print(
+                    f"[DOWNLOAD] ✅ {file_type.capitalize()} PDF downloaded for ID: {input_id} at {datetime.now().strftime('%H:%M:%S')}")
+            else:
+                raise Exception(
+                    f"[ERROR] ❌ Failed {file_type} PDF for ID {input_id}: Status={response.status_code}, URL={url}")
+        except requests.exceptions.Timeout:
+            raise Exception(f"[TIMEOUT] ⏰ {file_type.capitalize()} PDF download timed out for ID {input_id}")
+        except Exception as e:
+            raise Exception(f"[FAILED] ❌ {file_type.capitalize()} PDF for ID {input_id} - {e}")
 
     def download_all(self):
         """
@@ -97,12 +104,17 @@ class PDFDownloader:
                 if i % 50 == 0:
                     print(f"[INFO] Submitted {i} download tasks...")
 
+            print(f"[INFO] ✅ All {len(futures)} download tasks submitted. Waiting for completion...\n")
+
             try:
                 for future in as_completed(futures):  # No timeout
                     if stop_event.is_set():
                         print("[!] Cancelling remaining futures.")
                         break
-                    future.result()
+                    try:
+                        future.result()
+                    except Exception as e:
+                        print(f"[ERROR] ❌ A download task failed during execution: {e}")
             except KeyboardInterrupt:
                 print("\n[!] Caught KeyboardInterrupt. Exiting...")
                 stop_event.set()

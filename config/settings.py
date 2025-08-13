@@ -6,7 +6,7 @@ import sys
 
 # === Bearer Token from Text File === #
 TOKEN_FILE = Path(__file__).parent / "bearer_token.txt"
-
+X_AUTH_USER_ID = Path(__file__).parent / "x_auth_user_id.txt"
 
 def load_token_or_exit(token_file_path):
     try:
@@ -19,6 +19,14 @@ def load_token_or_exit(token_file_path):
     except FileNotFoundError:
         print("❌ Warning: bearer_token.txt not found.")
         sys.exit(1)
+
+
+def load_x_auth_user_id(auth_user_id_file_path):
+    try:
+        auth_user_id = auth_user_id_file_path.read_text().strip()
+        return auth_user_id
+    except Exception as e:
+        print(f"Could not load the x-auth-user-id because of {e}")
 
 
 # === Base Directories === #
@@ -51,7 +59,7 @@ HEADERS = {
     "Referer": "https://foscos.fssai.gov.in/",
     "Content-Type": "application/json",
     "Authorization": load_token_or_exit(TOKEN_FILE),
-    "x-auth-user-id": "f33RY6DAyt+WQt8UJG54SQUxr5GrXYXkSwv4uzKRUiI=",
+    "x-auth-user-id": load_x_auth_user_id(X_AUTH_USER_ID),
     "Connection": "keep-alive",
     "Sec-Fetch-Dest": "empty",
     "Sec-Fetch-Mode": "cors",

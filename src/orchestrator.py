@@ -1,11 +1,12 @@
-from config.settings import INPUT_EXCEL_PATH_SEGMENT_1, INPUT_EXCEL_PATH_SEGMENT_2, OUTPUT_EXCEL_PATH_SEGMENT_1, OUTPUT_EXCEL_PATH_SEGMENT_2
+from config.settings import INPUT_EXCEL_PATH_SEGMENT_1, INPUT_EXCEL_PATH_SEGMENT_2, OUTPUT_EXCEL_PATH_SEGMENT_1, \
+    OUTPUT_EXCEL_PATH_SEGMENT_2
 from src.downloader import PDFDownloader
 from src.utils import read_registration_numbers
 from src.extractor_segment1 import PDFExtractorSegment1
 from src.extractor_segment2 import PDFExtractorSegment2
 from src.utils import format_excel
 from multiprocessing import Queue
-from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing
 import pandas as pd
 from pathlib import Path
@@ -79,6 +80,8 @@ class FSSAIOrchestrator:
         self.manager = Manager()
         self.extracted_rows = self.manager.list()
         self.autosave_stop_event = threading.Event()
+        self.failed_ids = []
+        self.extraction_done = False
 
     def load_registration_numbers(self, user_choice_for_segment):
         """Reads the registration / licence ref id numbers from the Excel file."""
@@ -199,6 +202,32 @@ class FSSAIOrchestrator:
         # ✅ Start downloading (this will push items into the queue)
         self.download_pdfs()
 
+        # ✅ STEP 3: Check which REF IDs were successfully downloaded
+        from config.settings import REGISTRATION_FORMS_DIR, APPLICATION_FORMS_DIR, LICENCE_FORMS_DIR
+
+        if self.segment == '1':
+            reg_files = {f.stem.replace("registration_", "") for f in REGISTRATION_FORMS_DIR.glob("*.pdf")}
+            app_files = {f.stem.replace("application_form_", "") for f in APPLICATION_FORMS_DIR.glob("*.pdf")}
+            downloaded_ids = reg_files & app_files  # Must have both
+
+        elif self.segment == '2':
+            licence_files = {f.stem.replace("Licence_form_", "") for f in LICENCE_FORMS_DIR.glob("*.pdf")}
+            downloaded_ids = licence_files
+
+        else:
+            print("[ERROR] Invalid segment. Exiting...")
+            return
+
+        original_ids = set(self.input_ids)
+        self.failed_ids = list(original_ids - downloaded_ids)
+
+        if self.failed_ids:
+            print(f"[WARNING] ❌ {len(self.failed_ids)} REF IDs failed to download completely.\n")
+            for ref in self.failed_ids:
+                print(f" - {ref}")
+        else:
+            print("[INFO] ✅ All REF IDs downloaded successfully.\n")
+
         # ✅ Signal workers to stop after queue is exhausted
         for _ in workers:
             self.download_queue.put(None)
@@ -207,6 +236,8 @@ class FSSAIOrchestrator:
         for p in workers:
             p.join()
 
+        self.extraction_done = True
+
         # ✅ Stop autosave thread after everything is done
         self.autosave_stop_event.set()
         autosave_thread.join()
@@ -214,9 +245,20 @@ class FSSAIOrchestrator:
         # ✅ Final save to Excel
         self.save_to_excel()
 
+        # ✅ STEP 4: Save failed REF IDs to Excel
+        if self.failed_ids:
+            failed_df = pd.DataFrame({"Failed_REF_IDs": self.failed_ids})
+            segment_name = f"Segment_{self.segment}"
+            failed_excel_path = Path("data/Output Excels") / f"Failed_REF_IDs_for_{segment_name}.xlsx"
+            failed_excel_path.parent.mkdir(parents=True, exist_ok=True)
+            failed_df.to_excel(failed_excel_path, index=False)
+            print(f"[FAILED REF IDs] ❌ Saved to: {failed_excel_path}")
+        else:
+            print("[FAILED REF IDs] ✅ No failed REF IDs. Skipping failure Excel.")
+
     def autosave_worker(self, lock):
         while not self.autosave_stop_event.is_set():
-            time.sleep(600)  # 10 minutes
+            time.sleep(300)  # 10 minutes
 
             with lock:
                 if self.extracted_rows:
@@ -224,11 +266,9 @@ class FSSAIOrchestrator:
 
                     df = pd.DataFrame(list(self.extracted_rows))
 
-                    # Final output path
                     output_path = Path(OUTPUT_EXCEL_PATH_SEGMENT_1) if self.segment == "1" else Path(
                         OUTPUT_EXCEL_PATH_SEGMENT_2)
 
-                    # ✅ Safe and short temp file name
                     if self.segment == "1":
                         temp_path = output_path.parent / "Reg_Seg_1_Output_Temp.xlsx"
                     else:
@@ -242,5 +282,11 @@ class FSSAIOrchestrator:
                         print(f"[AUTOSAVE] ✅ Excel autosaved to {output_path}")
                     except Exception as e:
                         print(f"[AUTOSAVE ERROR] ❌ Failed to autosave: {e}")
+
+            # ✅ Stop autosave thread if extraction is done
+            if self.extraction_done:
+                print("[AUTOSAVE] 🛑 Extraction complete. Stopping autosave thread.")
+                break
+
 
 
